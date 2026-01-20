@@ -1,0 +1,899 @@
+{
+  "name": "AI Customer Support System",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/customer-interaction",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://cloudsyncpro.lovable.app",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -816,
+        -32
+      ],
+      "id": "765eec86-4503-4202-921a-8455a775f772",
+      "name": "Webhook",
+      "webhookId": "4d70df17-2413-4bb4-80a9-8679222cbc68"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "314de0dc-6867-4ade-8bb2-c8bc31c7fa8b",
+              "name": "type",
+              "value": "={{ $json.body.type }}",
+              "type": "string"
+            },
+            {
+              "id": "7041fe4e-659d-426e-a7d1-f9ec55f39e80",
+              "name": "customer_email",
+              "value": "={{ $json.body.customer_email || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "28b6f947-d5c2-43ab-9eda-f818f0cbb0b9",
+              "name": "message",
+              "value": "={{ $json.body.message || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "f72aa479-8934-4172-8b55-1282ab143e1a",
+              "name": "session_id",
+              "value": "={{ $json.body.session_id || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "faabd60c-1c93-4d1f-9634-bb5e3f00c732",
+              "name": "timestamp",
+              "value": "={{ $json.body.timestamp || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "b72fab78-1034-4650-95aa-fb73aef6834c",
+              "name": "customer_name",
+              "value": "={{ $json.body.customer_name || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "f46040d3-7571-4f04-a53f-9eb314c6b20d",
+              "name": "rating",
+              "value": "={{ $json.body.rating || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "a7219ca2-58d1-44c4-89b4-b04ac1867de5",
+              "name": "review_text",
+              "value": "={{ $json.body.review_text || \"\"}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        -32
+      ],
+      "id": "78fe708a-0e06-4d99-a2a7-2390c73ad90c",
+      "name": "Parse Input"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-3.5-sonnet",
+        "options": {
+          "maxTokens": 1000,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        80
+      ],
+      "id": "eaf92df2-203c-4521-ac93-b4451d81cc29",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "0Rnrih3LZoCw54Uj",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to retrieve customer account information when you need to personalise responses or understand the customer's context. Call this tool when you need to know the customer's plan, account details, or history. Only call if customer_email is provided and not empty.",
+        "workflowId": {
+          "__rl": true,
+          "value": "kDlxTvut2q7jMwW4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/kDlxTvut2q7jMwW4",
+          "cachedResultName": "TOOL - Fetch Customer Profile"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('customer_email', `The email address of the customer whose profile should be fetched`, 'string') }}"
+          },
+          "matchingColumns": [
+            "customer_email"
+          ],
+          "schema": [
+            {
+              "id": "customer_email",
+              "displayName": "customer_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        320
+      ],
+      "id": "a52e136b-f8b8-40d6-b3cc-e685d56cfd5f",
+      "name": "Fetch Customer Profile"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to check if a customer has any existing open or in-progress support tickets. Call this when a customer mentions an ongoing issue or when you want to avoid creating duplicate tickets. Only call after customer has provided their email address and details. ",
+        "workflowId": {
+          "__rl": true,
+          "value": "zr5fMTWJDTQrknqo",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/zr5fMTWJDTQrknqo",
+          "cachedResultName": "TOOL - Check Open Tickets"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('customer_email', `The email address of the customer whose open tickets should be checked`, 'string') }}"
+          },
+          "matchingColumns": [
+            "customer_email"
+          ],
+          "schema": [
+            {
+              "id": "customer_email",
+              "displayName": "customer_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        384
+      ],
+      "id": "2a4474f0-3251-4bea-98cd-49b8bfc6fdc7",
+      "name": "Check Open Tickets"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to create a new support ticket when a customer has a real issue that requires human follow-up. Only create tickets for genuine problems (technical issues, billing concerns, bugs). Do NOT create tickets for simple FAQ questions that you can answer directly. Choose appropriate priority based on urgency and impact on customer's work. Only call after collecting the necessary details needed for the ticket opening.",
+        "workflowId": {
+          "__rl": true,
+          "value": "LNzVsN9JtSAY34RH",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/LNzVsN9JtSAY34RH",
+          "cachedResultName": "TOOL - Create Support Ticket"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('customer_email', `The customer's email address`, 'string') }}",
+            "issue_type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('issue_type', `Type of issue - must be one of: technical, billing, feature_request, bug, other`, 'string') }}",
+            "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('description', `Detailed description of the customer's issue or problem`, 'string') }}",
+            "priority": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('priority', `Priority level - must be one of: low, medium, high, urgent`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_email",
+              "displayName": "customer_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "issue_type",
+              "displayName": "issue_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        368
+      ],
+      "id": "e39bb451-0b16-4244-abc1-991eb127a624",
+      "name": "Create Support Ticket"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to immediately alert the human support team in Slack. Call this tool when: (1) customer is angry, frustrated, or demanding to speak with a human, (2) issue is urgent and blocking their work, or (3) you are uncertain how to help and need human judgment. Include a clear summary of why escalation is needed.",
+        "workflowId": {
+          "__rl": true,
+          "value": "ZioDLvf7CFUzdkXJ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ZioDLvf7CFUzdkXJ",
+          "cachedResultName": "TOOL - Escalate to Slack"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('customer_email', `The customer's email address`, 'string') }}",
+            "customer_name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('customer_name', `The customer's name (use \"Unknown\" if not available)`, 'string') }}",
+            "session_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('session_id', `The chat session ID for reference`, 'string') }}",
+            "issue_summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('issue_summary', `Brief summary of why escalation is needed (1-2 sentences)`, 'string') }}",
+            "priority": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('priority', `Urgency level - must be one of: low, medium, high, urgent`, 'string') }}",
+            "ticket_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ticket_id', `Related support ticket ID if one exists (leave empty if no ticket created yet)`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_email",
+              "displayName": "customer_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "issue_summary",
+              "displayName": "issue_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        320
+      ],
+      "id": "7a77dd1d-f37e-4321-9033-304579f6bd8d",
+      "name": "Escalate to Slack Team"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get AI agent output\nconst agentData = $input.first().json;\n\n// Extract the response text\nlet botResponse = '';\n\n// AI Agent output can be in different formats\nif (typeof agentData.output === 'string') {\n  botResponse = agentData.output;\n} else if (agentData.output?.text) {\n  botResponse = agentData.output.text;\n} else if (agentData.text) {\n  botResponse = agentData.text;\n} else if (agentData.output) {\n  botResponse = JSON.stringify(agentData.output);\n} else {\n  botResponse = \"I'm here to help! What can I do for you?\";\n}\n\n// Get original input data\nconst inputData = $('Parse Input').first().json;\n\nreturn [{\n  json: {\n    type: inputData.type,\n    bot_response: botResponse.trim(),\n    customer_email: inputData.customer_email,\n    session_id: inputData.session_id,\n    message: inputData.message,\n    customer_name: inputData.customer_name,\n    rating: inputData.rating,\n    review_text: inputData.review_text\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -32
+      ],
+      "id": "4fd755aa-e2d7-47d0-b356-ae49c18d3eaf",
+      "name": "Extract Agent Response"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "chat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b4e943bd-9292-407f-94a0-08753ec5f2d5"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ff7a53b1-2a8f-4281-8f50-1b80692886e6",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "review",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        -32
+      ],
+      "id": "43715a0e-469d-4a0e-9252-d83270da48a8",
+      "name": "Switch - Chat or Review"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"type\": \"chat\",\n  \"response\": \"{{ $json.bot_response.replace(/\\n/g, '\\\\n').replace(/\"/g, '\\\\\"') }}\",\n  \"session_id\": \"{{ $json.session_id }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1072,
+        -144
+      ],
+      "id": "f170b8d0-c775-46f1-b646-2ba2736bb8c8",
+      "name": "Respond to Webhook - Chat"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"type\": \"review\",\n  \"bot_reply\": \"{{$json.bot_response}}\",\n  \"customer_name\": \"{{$json.customer_name}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1072,
+        48
+      ],
+      "id": "f7a3916d-bc96-4a4b-b9d5-88d7af571fc5",
+      "name": "Respond to Webhook - Review"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to search the CloudSync Pro knowledge base and retrieve accurate, up-to-date information about the product, features, pricing, setup steps, troubleshooting, and policies. Always use this tool when answering customer questions that require factual or company-specific information.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "cloudsync-kb",
+          "mode": "list",
+          "cachedResultName": "cloudsync-kb"
+        },
+        "options": {
+          "pineconeNamespace": "Cloudsync Pro"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        32
+      ],
+      "id": "6504b0df-5481-4e02-b546-d21fd0979e4b",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "QIRn3ocGsah59QZW",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{$json.session_id || $json.customer_email}}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -320,
+        224
+      ],
+      "id": "337fbe9b-e9ef-4f26-b07a-574a16e7d7fa",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        416,
+        144
+      ],
+      "id": "2f08d7da-009e-4ee7-b14d-6f1f18e2625a",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TCPsNckVcUPKdHfs",
+          "name": "Google Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{$json.type === 'chat' ? \n   `Customer message: ${$json.message}` : \n   `Customer review - Rating: ${$json.rating}/5 - Text: ${$json.review_text}`\n}}",
+        "options": {
+          "systemMessage": "=You are the AI customer support agent for CloudSync Pro, a cloud storage management platform.\n\n==============================\nCORE MISSION\n==============================\nAnswer customer questions quickly and accurately. Be helpful, professional, and human.\n\n==============================\nABSOLUTE OUTPUT RULES (NON-NEGOTIABLE)\n==============================\n- NEVER mention tools, internal systems, workflows, or saving interactions.\n- NEVER include internal reasoning, meta commentary, or process explanations.\n- NEVER include parenthetical internal notes.\n- NEVER explain what you are about to do.\n- ONLY output what the customer should read.\n\nIf your draft response mentions tools, saving, workflows, or system behavior — REMOVE IT.\n\n==============================\nTOOL USAGE RULES (INTERNAL — NEVER TELL THE USER)\n==============================\n\nPinecone Vector Store — Primary knowledge source:\n- Use for ANY question about CloudSync Pro features, pricing, setup, troubleshooting, or policies.\n- In most cases this should be your first and only lookup.\n- Search first, then answer confidently.\n\nFetch Customer Profile — Personalization only:\n- Use ONLY when the customer refers to \"my account\", \"my plan\", \"my subscription\", or similar.\n- Or when you need account-specific details.\n- Do NOT call for general questions.\n\nCheck Open Tickets — Rare:\n- Only when the customer mentions \"my ticket\", \"I reported this before\", or \"following up\".\n\nCreate Support Ticket — Real issues only:\n- When the problem cannot be solved using the knowledge base.\n- For billing or technical issues needing human review.\n- Do NOT create tickets for simple questions.\n\nEscalate to Slack Team — Human handoff:\n\nStep 1: Acknowledge:\n- Tell the customer: \"I'll connect you with our team right away.\"\n\nStep 2: Gather required info IF missing:\n- If customer_email is empty → Ask for it and WAIT.\n- If issue is unclear → Ask for a brief description and WAIT.\n\nStep 3: Call escalate_to_slack with REAL data:\n- customer_email: Real email (never fake or empty)\n- customer_name: From profile or \"Unknown\"\n- issue_summary: Real problem summary\n- priority: urgent / high / medium\n- ticket_id: Only if a ticket exists\n- session_id: Always include\n\nCRITICAL: NEVER escalate with fake or missing email.\n\nSave Interaction — End of conversation only:\n\nCALL WHEN:\n- Customer says \"thanks\", \"thank you\", \"that's all\", \"bye\", \"got it\", \"perfect\", \"solved\"\n- Customer confirms the issue is resolved\n- You have escalated to humans and the conversation is ending\n\nDO NOT CALL:\n- On the first message\n- In the middle of a conversation\n- When asking follow-up questions\n\nFOR REVIEWS:\n- Generate the reply\n- If rating < 3 → Also escalate to Slack\n- Save interaction immediately\n\n==============================\nCONVERSATION FLOW\n==============================\n\nSIMPLE QUESTIONS:\n1. Search Pinecone\n2. Answer\n3. If customer is satisfied → Save Interaction\n\nPERSONALIZED QUESTIONS:\n1. Search Pinecone\n2. Fetch Customer Profile\n3. Combine into answer\n4. If satisfied → Save Interaction\n\nTECHNICAL ISSUES:\n1. Search Pinecone\n2. If solvable → Solve\n3. If not → Create Support Ticket\n4. Save Interaction\n\nESCALATION REQUESTS:\n1. Acknowledge\n2. Gather missing info and WAIT\n3. Escalate with real data\n4. Confirm handoff\n5. Save Interaction\n\nREVIEWS:\n1. Generate reply\n2. If rating < 3 → Escalate\n3. Save Interaction\n\n==============================\nPERSONALITY & STYLE\n==============================\n- Short and helpful (under 100 words unless needed)\n- Professional, warm, human\n- Clear and simple language\n- Honest when uncertain: \"Let me connect you with our team for this.\"\n\n==============================\nGREETING BEHAVIOR\n==============================\nIf the user says \"Hi\", \"Hello\", or starts the chat:\nReply ONLY:\n\"Hello! Welcome to CloudSync Pro support. How can I help you today?\"\n\nNothing else.\n\n==============================\nFINAL RESPONSE FILTER (MANDATORY)\n==============================\nBefore sending any message:\n- Does it mention tools, saving, workflows, or internal logic?\n- Does it explain what you are doing?\n\nIf yes → REMOVE IT.\n\nOnly send the customer-facing message.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -128,
+        -32
+      ],
+      "id": "c65840bb-497f-4e61-94b5-d4a7d238a36a",
+      "name": "CloudSync Pro Support Agent"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool ONLY at the very end of the conversation to save the interaction to the database. \nFor CHAT: call after you've provided your final response. \nFor REVIEW: call after generating the review reply. Do NOT call this tool multiple times in one conversation. Always set appropriate sentiment (positive/neutral/negative/angry) and status (auto_resolved if you handled it, escalated if you called escalate_to_slack).",
+        "workflowId": {
+          "__rl": true,
+          "value": "HOcUHApuRYh20qc8",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/HOcUHApuRYh20qc8",
+          "cachedResultName": "TOOL - Save Interaction"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('type', `Type of interaction - must be either 'chat' or 'review'`, 'string') }}",
+            "customer_email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('customer_email', `Customer's email address (can be empty for anonymous visitors)`, 'string') }}",
+            "session_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('session_id', `Unique session identifier for this conversation`, 'string') }}",
+            "customer_message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('customer_message', `The customer's original message or question`, 'string') }}",
+            "bot_response": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('bot_response', `Your response to the customer`, 'string') }}",
+            "sentiment": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('sentiment', `Overall sentiment - must be one of: positive, neutral, negative, angry`, 'string') }}",
+            "status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('status', `Interaction status - must be one of: auto_resolved, escalated, pending`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "customer_email",
+              "displayName": "customer_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "customer_message",
+              "displayName": "customer_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "bot_response",
+              "displayName": "bot_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        272
+      ],
+      "id": "94fca458-0c5c-4dd3-9e29-3ab657f510f3",
+      "name": "Save Interaction"
+    },
+    {
+      "parameters": {
+        "content": "# Response Delivery\n## 📤 Response Routing & Delivery\n\nRoutes bot responses based on interaction type. Chat messages return immediately to website chat widget. Reviews generate thoughtful replies and alert team for low ratings. Ensures customers receive responses in under 30 seconds.",
+        "height": 544,
+        "width": 688,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        560,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "c0f40f6d-4071-4e82-bc1d-666a51655557",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Input Processing\n## 📥 Webhook & Input Parsing\n\nReceives customer interactions from CloudSync Pro website via webhook. Parses incoming data including message type (chat/review), customer email, session ID, and message content. Prepares clean data structure for AI agent processing.",
+        "height": 368,
+        "width": 448,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -880,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "a37c9b83-5686-48b3-955c-a9f285add35d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# AI Brain\n## 🤖 AI Agent & Intelligence Layer\n\nClaude Sonnet 4 analyzes customer messages using Pinecone knowledge base (25+ FAQs), conversation memory, and 6 specialized tools. Makes intelligent decisions: answer directly, escalate to humans, create tickets, or gather more information. Generates personalized, helpful responses.",
+        "height": 768,
+        "width": 960,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -416,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "44d9eefb-bb2b-4701-b0d0-13c43bd820af",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Input": {
+      "main": [
+        [
+          {
+            "node": "CloudSync Pro Support Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CloudSync Pro Support Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Customer Profile": {
+      "ai_tool": [
+        [
+          {
+            "node": "CloudSync Pro Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Open Tickets": {
+      "ai_tool": [
+        [
+          {
+            "node": "CloudSync Pro Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Support Ticket": {
+      "ai_tool": [
+        [
+          {
+            "node": "CloudSync Pro Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalate to Slack Team": {
+      "ai_tool": [
+        [
+          {
+            "node": "CloudSync Pro Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Agent Response": {
+      "main": [
+        [
+          {
+            "node": "Switch - Chat or Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Chat or Review": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook - Chat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook - Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "CloudSync Pro Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "CloudSync Pro Support Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CloudSync Pro Support Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Agent Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Interaction": {
+      "ai_tool": [
+        [
+          {
+            "node": "CloudSync Pro Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "versionId": "626cf3f7-3d1d-494d-82e5-64779cf807d4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8b006a0c2860e2ebe4a18b401240e0a3d67106ad5486c566af12dd05e34cbe2a"
+  },
+  "id": "Ex0wQ8YAEs8sHZx5",
+  "tags": []
+}
